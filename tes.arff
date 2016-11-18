@@ -1,0 +1,7 @@
+@relation tes
+@attribute A {a,b}
+@attribute B {c,d}
+@attribute class {YES,NO}
+
+@data
+a c YES
