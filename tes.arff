@@ -1,7 +1,9 @@
 @relation tes
-@attribute A {a,b}
-@attribute B {c,d}
 @attribute class {YES,NO}
+@attribute A numeric
+@attribute B numeric
 
 @data
-a c YES
+YES 100 20
+NO 100 1
+NO 90 1
