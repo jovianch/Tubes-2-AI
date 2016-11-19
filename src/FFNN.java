@@ -58,10 +58,9 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
         this.inputNeurons = new Neuron[dataset.numAttributes()-1];
         this.hiddenNeurons = new Neuron[2];
         this.outputNeurons = new  Neuron[dataset.numClasses()-1];
-        epoch = 10;
+        epoch = 3;
         Edge dummy = null;
-        for(int k=0; k<epoch; k++) {
-            for (int i = 0; i < dataset.numAttributes() - 1; i++) {
+        for (int i = 0; i < dataset.numAttributes() - 1; i++) {
                 this.inputNeurons[i] = new Neuron();
                 for (int j = 0; j < 2; j++) {
                     this.hiddenNeurons[j] = new Neuron();
@@ -77,32 +76,43 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
                     this.edges.add(dummy);
                 }
             }
+            
+        for(int k=0; k<epoch; k++) {
+            System.out.println("iterasi ke - " + (k+1));
+            
             listOfEdge listEdge = new listOfEdge(this.edges);
+            System.out.println("Jumlah atribut = " + dataset.numAttributes());
             for (int i = 0; i < instances.size(); i++) {
+                System.out.println("Instance ke - " + (i + 1));
+                
                 for (int j = 0; j < dataset.numAttributes() - 1; j++) {
+                    System.out.println("value ke - " + (j+1));
                     this.inputNeurons[j].setOutputInput(instances.instance(i).value(j));
                 }
 
                 List<Edge> inputEdgeHidden = null;
 
+                //OUTPUT HIDDEN LAYER
                 for (int j = 0; j < 2; j++) {
                     inputEdgeHidden = null;
                     inputEdgeHidden = listEdge.getListTujuan(this.hiddenNeurons[j]);
-                    System.out.println(inputEdgeHidden.get(0).getWeight());
+                    //System.out.println(inputEdgeHidden.get(0).getWeight());
                     this.hiddenNeurons[j].setOutput(inputEdgeHidden);
-                    System.out.println(this.hiddenNeurons[j].getOutput());
+                    //System.out.println(this.hiddenNeurons[j].getOutput());
                 }
 
+                //OUTPUT OUTPUT LAYER
                 for (int j = 0; j < dataset.numClasses() - 1; j++) {
                     inputEdgeHidden = null;
                     inputEdgeHidden = listEdge.getListTujuan(this.outputNeurons[j]);
-                    System.out.println(inputEdgeHidden.get(0).getWeight());
+                    //System.out.println(inputEdgeHidden.get(0).getWeight());
                     this.outputNeurons[j].setOutput(inputEdgeHidden);
-                    System.out.println(this.outputNeurons[j].getOutput());
-
-                    double target = 0.5;
-                    this.outputNeurons[j].setErrorOutput(target);
-                    System.out.println(this.outputNeurons[j].getError());
+                    //System.out.println(this.outputNeurons[j].getOutput());
+                    
+                    //ERROR OUTPUT LAYER
+                    //double target = 0.5;
+                    this.outputNeurons[j].setErrorOutput(instances.instance(i).value(0));
+                    //System.out.println(this.outputNeurons[j].getError());
                 }
 
                 for (int j = 0; j < 2; j++) {
@@ -110,13 +120,14 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
                     inputEdgeHidden = null;
                     inputEdgeHidden = listEdge.getListSumber(this.hiddenNeurons[j]);
                     this.hiddenNeurons[j].setErrorHidden(inputEdgeHidden);
-                    System.out.println(this.hiddenNeurons[j].getError());
+                    //System.out.println(this.hiddenNeurons[j].getError());
                 }
 
                 //UPDATE WEIGHT
                 for (int j = 0; j < listEdge.getSize(); j++) {
                     double error = listEdge.getList().get(j).getTujuan().getError();
                     double input = listEdge.getList().get(j).getSumber().getOutput();
+                    //LEARNING RATE = 1.00
                     listEdge.getList().get(j).updateWeight(1.00, error, input);
                     System.out.println("Weight " + j + "= " + listEdge.getList().get(j).getWeight());
                 }
@@ -228,7 +239,7 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
         Instances instances = null;
         try {
             // Read file
-            BufferedReader breader = new BufferedReader(new FileReader("tes.arff"));
+            BufferedReader breader = new BufferedReader(new FileReader("mush.arff"));
 
             // Convert to Instances type
             instances = new Instances(breader);
