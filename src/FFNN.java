@@ -1,5 +1,6 @@
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.classifiers.functions.neural.LinearUnit;
 import weka.classifiers.functions.neural.NeuralConnection;
@@ -54,135 +55,124 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
         discretize.setInputFormat(instances);
         Instances discInstances = Filter.useFilter(instances, discretize);
         discInstances.setClassIndex(0);*/
-        Instances discInstances = instances;
+        this.instances = instances;
 
-
+        System.out.println(1 / (1 + (Math.exp(-0.2))));
         //Change nominal to numeric PR!!!!!
-        for(int i=0;i<discInstances.numAttributes();i++) {
-            if (discInstances.classIndex() != i) {
-                if (discInstances.attribute(i).isNominal()) {
+        for(int i=0;i<this.instances.numAttributes();i++) {
+            if (this.instances.classIndex() != i) {
+                if (this.instances.attribute(i).isNominal()) {
                     //Ubah ke numeric (belum nemu caranya)
                 }
             }
         }
 
-        Instances dataset = discInstances;
-        dataset.setClassIndex(0);
-
         isNormalizeAttributes = true;
         //Normalize kayanya bikin sendiri
         if (isNormalizeAttributes) {
-            range = new double[dataset.numAttributes()];
-            for (int i=0; i<dataset.numAttributes(); i++) {
-                if (dataset.classIndex() != i) {
-                    range[i] = dataset.kthSmallestValue(i, dataset.size());
-                    System.out.println(range[i]);
+            range = new double[this.instances.numAttributes()];
+            for (int i=0; i<this.instances.numAttributes(); i++) {
+                if (this.instances.classIndex() != i) {
+                    range[i] = this.instances.kthSmallestValue(i, this.instances.size());
+                    //System.out.println(range[i]);
                 } else {
                     range[i] = 0;
                 }
             }
             //Ubah valuenya berdasar range
-            for (int i=0; i<dataset.size(); i++) {
-                for (int j=0; j<dataset.numAttributes(); j++) {
-                    if (dataset.classIndex() != j) {
-                        double updateValue = dataset.instance(i).value(j) / this.range[j];
-                        dataset.instance(i).setValue(j, updateValue);
-                        System.out.println(dataset.instance(i).value(j));
+            for (int i=0; i<this.instances.size(); i++) {
+                for (int j=0; j<this.instances.numAttributes(); j++) {
+                    if (this.instances.classIndex() != j) {
+                        double updateValue = this.instances.instance(i).value(j) / this.range[j];
+                        this.instances.instance(i).setValue(j, updateValue);
+                        //System.out.println(this.instances.instance(i).value(j));
                     }
                 }
             }
 
         }
 
-        this.instances = dataset;
         edges = new ArrayList<Edge>();
 
-        this.inputNeurons = new Neuron[dataset.numAttributes()-1];
-        this.hiddenNeurons = new Neuron[2];
-        this.outputNeurons = new  Neuron[dataset.numClasses()];
+        this.inputNeurons = new Neuron[this.instances.numAttributes()-1];
+        this.hiddenNeurons = new Neuron[12];
+        this.outputNeurons = new  Neuron[this.instances.numClasses()];
 
-        System.out.println(instances.numAttributes());
-        System.out.println(discInstances.attribute(0).toString());
-        System.out.println(discInstances.classAttribute().toString());
-        System.out.println(dataset.classAttribute().toString());
-        System.out.println(dataset.attribute(1).toString());
-        System.out.println(discInstances.numAttributes());
-        System.out.println(dataset.numAttributes());
+        for (int j = 0; j < 12 ; j++) {
+            this.hiddenNeurons[j] = new Neuron();
+        }
 
-        epoch = 2;
+        for (int j = 0; j < this.instances.numClasses(); j++) {
+            this.outputNeurons[j] = new Neuron();
+        }
+
+        epoch = 100000;
         Edge dummy = null;
         for (int i = 0; i < this.instances.numAttributes() - 1; i++) {
             this.inputNeurons[i] = new Neuron();
-            for (int j = 0; j < 2 ; j++) {
-                this.hiddenNeurons[j] = new Neuron();
-                dummy = new Edge(this.inputNeurons[i], 1, this.hiddenNeurons[j]);
+            for (int j = 0; j < 12 ; j++) {
+                dummy = new Edge(this.inputNeurons[i], Math.random(), this.hiddenNeurons[j]);
                 this.edges.add(dummy);
             }
         }
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i <12; i++) {
             for (int j = 0; j < this.instances.numClasses(); j++) {
-                this.outputNeurons[j] = new Neuron();
-                dummy = new Edge(this.hiddenNeurons[i], 1, this.outputNeurons[j]);
+                dummy = new Edge(this.hiddenNeurons[i], Math.random(), this.outputNeurons[j]);
                 this.edges.add(dummy);
             }
         }
             
         for(int k=0; k<epoch; k++) {
             random = new Random();
-            dataset.randomize(random);
+            this.instances.randomize(random);
 
-            System.out.println("iterasi ke - " + (k+1));
+            //System.out.println("iterasi ke - " + (k+1));
             
             this.listEdge = new listOfEdge(this.edges);
-            System.out.println("Jumlah atribut = " + dataset.numAttributes());
+            //System.out.println("Jumlah atribut = " + this.instances.numAttributes());
             for (int i = 0; i < this.instances.size(); i++) {
-                System.out.println("Instance ke - " + (i + 1));
+                //System.out.println("Instance ke - " + (i + 1));
                 
-                for (int j = 0; j < dataset.numAttributes() - 1; j++) {
-                    System.out.println("value ke - " + (j+1));
-                    this.inputNeurons[j].setOutputInput(this.instances.instance(i).value(j+1));
-                    System.out.println(this.instances.instance(i).value(j+1));
-                    System.out.println(this.inputNeurons[j].getOutput());
+                for (int j = 0; j < this.instances.numAttributes() - 1; j++) {
+                    //System.out.println("value ke - " + (j+1));
+                    this.inputNeurons[j].setOutputInput(this.instances.instance(i).value(j));
+                    //System.out.println(this.instances.instance(i).value(j));
+                    //System.out.println(this.inputNeurons[j].getOutput());
                 }
 
-                List<Edge> inputEdgeHidden = null;
-
                 //OUTPUT HIDDEN LAYER
-                for (int j = 0; j < 2; j++) {
-                    inputEdgeHidden = null;
-                    inputEdgeHidden = listEdge.getListTujuan(this.hiddenNeurons[j]);
+                for (int j = 0; j < 12; j++) {
+                    List<Edge> inputEdgeHidden = listEdge.getListTujuan(this.hiddenNeurons[j]);
                     //System.out.println(inputEdgeHidden.get(0).getWeight());
                     this.hiddenNeurons[j].setOutput(inputEdgeHidden);
-                    //System.out.println(this.hiddenNeurons[j].getOutput());
+                    //System.out.println("Output hiddenNeuron " + j + " : " + this.hiddenNeurons[j].getOutput());
                 }
 
                 //OUTPUT OUTPUT LAYER
-                for (int j = 0; j < dataset.numClasses(); j++) {
-                    inputEdgeHidden = null;
-                    inputEdgeHidden = listEdge.getListTujuan(this.outputNeurons[j]);
+                for (int j = 0; j < this.instances.numClasses(); j++) {
+                    List<Edge> inputEdgeHidden = listEdge.getListTujuan(this.outputNeurons[j]);
                     //System.out.println(inputEdgeHidden.get(0).getWeight());
                     this.outputNeurons[j].setOutput(inputEdgeHidden);
-                    //System.out.println(this.outputNeurons[j].getOutput());
+                    //System.out.println("Output outputNeuron " + j + " : " + this.outputNeurons[j].getOutput());
                     
                     //ERROR OUTPUT LAYER
                     //double target = 0.5;
                     if (this.instances.instance(i).value(this.instances.classIndex()) == j) {
                         this.outputNeurons[j].setErrorOutput(1);
-                        System.out.println("Target 1");
+                        //System.out.println("Target 1");
                     } else {
                         this.outputNeurons[j].setErrorOutput(0);
-                        System.out.println("Target 0");
+                        //System.out.println("Target 0");
                     }
-                    //System.out.println(this.outputNeurons[j].getError());
+                    //System.out.println("Error outputNeuron " + j + " : " +  this.outputNeurons[j].getError());
                 }
 
-                for (int j = 0; j < 2; j++) {
+                for (int j = 0; j < 12; j++) {
                     //ERROR HIDDEN LAYER
-                    inputEdgeHidden = null;
-                    inputEdgeHidden = listEdge.getListSumber(this.hiddenNeurons[j]);
+                    List<Edge> inputEdgeHidden = listEdge.getListSumber(this.hiddenNeurons[j]);
                     this.hiddenNeurons[j].setErrorHidden(inputEdgeHidden);
-                    //System.out.println(this.hiddenNeurons[j].getError());
+                    //System.out.println("Error hiddenNeuron " + j + " : " + this.hiddenNeurons[j].getError());
                 }
 
                 //UPDATE WEIGHT
@@ -191,7 +181,7 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
                     double input = listEdge.getList().get(j).getSumber().getOutput();
                     //LEARNING RATE = 1.00
                     listEdge.getList().get(j).updateWeight(1.00, error, input);
-                    System.out.println("Weight " + j + "= " + listEdge.getList().get(j).getWeight());
+                    //System.out.println("Weight " + j + "= " + listEdge.getList().get(j).getWeight());
                 }
 
             }
@@ -301,15 +291,23 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
         Instances instances = null;
         try {
             // Read file
-            BufferedReader breader = new BufferedReader(new FileReader("tes.arff"));
+            BufferedReader breader = new BufferedReader(new FileReader("Team.arff"));
 
             // Convert to Instances type
             instances = new Instances(breader);
-            instances.setClassIndex(0);
+            instances.setClassIndex(instances.numAttributes()-1);
 
             Classifier FFNN = new FFNN();
 
             FFNN.buildClassifier(instances);
+
+            Evaluation eval = new Evaluation(instances);
+            eval.evaluateModel(FFNN,instances);
+            System.out.println("\nData Learning Using Full-Training Schema\n");
+            System.out.println(eval.toString());
+            System.out.println(eval.toSummaryString());
+            System.out.println(eval.toClassDetailsString());
+            System.out.println(eval.toMatrixString());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -375,7 +373,7 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
     public double[] distributionForInstance(Instance instance) throws Exception {
         double[] result = new double[this.instances.numClasses()];
         //Change nominal to numeric
-        for(int i=0;i<instance.numAttributes();i++) {
+        /*for(int i=0;i<instance.numAttributes();i++) {
             if (this.instances.classIndex() != i) {
                 if (instance.attribute(i).isNominal()) {
                     //Ubah ke numeric (belum nemu caranya)
@@ -393,19 +391,19 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
                     System.out.println(instance.value(j));
                 }
             }
-        }
+        }*/
 
         for (int j = 0; j < instance.numAttributes() - 1; j++) {
-            System.out.println("value ke - " + (j+1));
-            this.inputNeurons[j].setOutputInput(instance.value(j+1));
-            System.out.println(instance.value(j+1));
-            System.out.println(this.inputNeurons[j].getOutput());
+            //System.out.println("value ke - " + (j+1));
+            this.inputNeurons[j].setOutputInput(instance.value(j));
+            //System.out.println(instance.value(j));
+            //System.out.println(this.inputNeurons[j].getOutput());
         }
 
         List<Edge> inputEdgeHidden = null;
 
         //OUTPUT HIDDEN LAYER
-        for (int j = 0; j < 2; j++) {
+        for (int j = 0; j < 12; j++) {
             inputEdgeHidden = null;
             inputEdgeHidden = this.listEdge.getListTujuan(this.hiddenNeurons[j]);
             //System.out.println(inputEdgeHidden.get(0).getWeight());
@@ -414,6 +412,8 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
         }
 
         //OUTPUT OUTPUT LAYER
+        double maks = 0;
+        int idxMaks = 0;
         for (int j = 0; j < this.instances.numClasses(); j++) {
             inputEdgeHidden = null;
             inputEdgeHidden = this.listEdge.getListTujuan(this.outputNeurons[j]);
@@ -421,35 +421,46 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
             this.outputNeurons[j].setOutput(inputEdgeHidden);
             //System.out.println(this.outputNeurons[j].getOutput());
             result[j] = this.outputNeurons[j].getOutput();
+            maks += this.outputNeurons[j].getOutput();
+            /*if (this.outputNeurons[j].getOutput() > maks) {
+                maks = this.outputNeurons[j].getOutput();
+                idxMaks = j;
+            }*/
 
             //ERROR OUTPUT LAYER
             //double target = 0.5;
+            /*System.out.println("Ini class: " + instance.value(11));
             if (instance.value(this.instances.classIndex()) == j) {
                 this.outputNeurons[j].setErrorOutput(1);
                 System.out.println("Target 1");
             } else {
                 this.outputNeurons[j].setErrorOutput(0);
                 System.out.println("Target 0");
-            }
+            }*/
             //System.out.println(this.outputNeurons[j].getError());
         }
 
-        for (int j = 0; j < 2; j++) {
+        for (int i = 0; i<this.instances.numClasses(); i++) {
+            result[i] /= maks;
+            System.out.println("Hasil Distribusi " + i +" : " + result[i]);
+        }
+
+        /*for (int j = 0; j < 12; j++) {
             //ERROR HIDDEN LAYER
             inputEdgeHidden = null;
             inputEdgeHidden = listEdge.getListSumber(this.hiddenNeurons[j]);
             this.hiddenNeurons[j].setErrorHidden(inputEdgeHidden);
             //System.out.println(this.hiddenNeurons[j].getError());
-        }
+        }*/
 
         //UPDATE WEIGHT
-        for (int j = 0; j < listEdge.getSize(); j++) {
+        /*for (int j = 0; j < listEdge.getSize(); j++) {
             double error = listEdge.getList().get(j).getTujuan().getError();
             double input = listEdge.getList().get(j).getSumber().getOutput();
             //LEARNING RATE = 1.00
             listEdge.getList().get(j).updateWeight(1.00, error, input);
             System.out.println("Weight " + j + "= " + listEdge.getList().get(j).getWeight());
-        }
+        }*/
 
         return result;
     }
@@ -526,5 +537,19 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
 
     public boolean getNormalizeAttributes() {
         return isNormalizeAttributes;
+    }
+
+    public Capabilities getCapabilities() {
+        Capabilities result = super.getCapabilities();
+        result.disableAll();
+        result.enable(Capabilities.Capability.NOMINAL_ATTRIBUTES);
+        result.enable(Capabilities.Capability.NUMERIC_ATTRIBUTES);
+        result.enable(Capabilities.Capability.DATE_ATTRIBUTES);
+        result.enable(Capabilities.Capability.MISSING_VALUES);
+        result.enable(Capabilities.Capability.NOMINAL_CLASS);
+        result.enable(Capabilities.Capability.NUMERIC_CLASS);
+        result.enable(Capabilities.Capability.DATE_CLASS);
+        result.enable(Capabilities.Capability.MISSING_CLASS_VALUES);
+        return result;
     }
 }
