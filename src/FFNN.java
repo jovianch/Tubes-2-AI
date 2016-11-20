@@ -122,8 +122,11 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
                 this.edges.add(dummy);
             }
         }
-            
-        for(int k=0; k<epoch; k++) {
+        
+        double sumerr = 999.00;
+        double treshold = 0.5;
+        
+        for(int k=0; ((k<epoch) || (sumerr > treshold)); k++) {
             random = new Random();
             this.instances.randomize(random);
 
@@ -161,8 +164,10 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
                     if (this.instances.instance(i).value(this.instances.classIndex()) == j) {
                         this.outputNeurons[j].setErrorOutput(1);
                         //System.out.println("Target 1");
+                        sumerr = sumerr + (Math.pow(1 - this.outputNeurons[j].getOutput(),2) / this.instances.numClasses());
                     } else {
                         this.outputNeurons[j].setErrorOutput(0);
+                        sumerr = sumerr + (Math.pow(0 - this.outputNeurons[j].getOutput(),2) / this.instances.numClasses());
                         //System.out.println("Target 0");
                     }
                     //System.out.println("Error outputNeuron " + j + " : " +  this.outputNeurons[j].getError());
@@ -183,6 +188,8 @@ public class FFNN extends AbstractClassifier implements OptionHandler, WeightedI
                     listEdge.getList().get(j).updateWeight(1.00, error, input);
                     //System.out.println("Weight " + j + "= " + listEdge.getList().get(j).getWeight());
                 }
+                
+                sumerr = sumerr / this.instances.numInstances();
 
             }
 
