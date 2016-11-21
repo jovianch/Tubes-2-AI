@@ -82,7 +82,7 @@ public class MainFFNN {
      * @param numericDataset : dataset that have been filtered by Discretize filter
      * @return fullTrainingClassifier : classifier after learning
      */
-    public static Classifier learningFullTraining(Instances numericDataset) {
+    public static FFNN learningFullTraining(Instances numericDataset) {
 
         // Initialize classifier
         FFNN fullTrainingClassifier = new FFNN();
@@ -121,7 +121,7 @@ public class MainFFNN {
      * @param numericDataset : dataset that have been filtered by Discretize filter
      * @return fullTrainingClassifier : classifier after learning
      */
-    public static Classifier learningKFoldCrossValidation(Instances numericDataset) {
+    public static FFNN learningKFoldCrossValidation(Instances numericDataset) {
         // Initialize classifier
         FFNN kFoldCrossValidationClassifier = new FFNN();
         try {
@@ -162,8 +162,8 @@ public class MainFFNN {
         try {
             boolean read = false;
             boolean save = false;
-            Classifier FFNNKF = null;
-            Classifier FFNNFT = null;
+            FFNN FFNNKF = null;
+            FFNN FFNNFT = null;
             if (read) {
                 FFNNFT = (FFNN) weka.core.SerializationHelper.read("FFNN.model");
             } else {
@@ -182,10 +182,26 @@ public class MainFFNN {
             instancesPlain.setClassIndex(instancesPlain.numAttributes()-1);
             Instance inputInstance = createInstanceFromInputUser(instances,instancesPlain);
 
+            double updateValue;
+            for (int j = 0; j < FFNNFT.getInstances().numAttributes(); j++) {
+                //Normalization
+                if (FFNNFT.getInstances().classIndex() != j) {
+                    updateValue = inputInstance.value(j) / FFNNFT.getRange(j);
+                    inputInstance.setValue(j, updateValue);
+                    //System.out.println(this.instances.instance(i).value(j));
+                }
+                //this.inputNeurons[j].setOutputInput(this.instances.instance(i).value(j));
+
+            }
+
             double x[] = FFNNFT.distributionForInstance(inputInstance);
             for(int k=0; k<instances.numClasses(); k++){
                 System.out.println(x[k]);
             }
+
+            int res = (int) FFNNFT.classifyInstance(inputInstance);
+
+            System.out.println("Result: " + instances.attribute(instances.classIndex()).value(res));
 
             if (save) {
                 weka.core.SerializationHelper.write("FFNNFT.model", FFNNFT);

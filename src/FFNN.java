@@ -422,6 +422,10 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
         return this.hiddenLayerNeuron;
     }
 
+    public double getRange(int i) {
+        return this.range[i];
+    }
+
     public Instances getInstances() {
         return this.instances;
     }
@@ -443,5 +447,20 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
         result.enable(Capabilities.Capability.DATE_CLASS);
         result.enable(Capabilities.Capability.MISSING_CLASS_VALUES);
         return result;
+    }
+
+    @Override
+    public double classifyInstance(Instance instnc) throws Exception {
+        double dist[] = new double[instances.numClasses()];
+        dist = distributionForInstance(instnc);
+        double maxi = 0;
+        double maxidx = 0;
+        for (int i = 0;i < instances.numClasses();i++) {
+            if (maxi < dist[i]) {
+                maxi = dist[i];
+                maxidx = i;
+            }
+        }
+        return maxidx;
     }
 }
