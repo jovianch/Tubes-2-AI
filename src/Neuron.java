@@ -20,7 +20,8 @@ public class Neuron {
     }
     
     public void setOutput(List<Edge> edge){
-        Double jumlah = 0.00;
+        //BIAS
+        Double jumlah = (Math.random() * 0.1 - 0.1 );
        
         output = (1 / (1 + (Math.exp(-jumlah))));
         for (int i = 0; i < edge.size(); i++){

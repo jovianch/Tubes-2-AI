@@ -97,21 +97,32 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
         }
 
         Edge dummy = null;
-        for (int i = 0; i < this.instances.numAttributes() - 1; i++) {
-            this.inputNeurons[i] = new Neuron();
-            for (int j = 0; j < this.hiddenLayerNeuron ; j++) {
-                dummy = new Edge(this.inputNeurons[i], Math.random(), this.hiddenNeurons[j]);
-                this.edges.add(dummy);
+        if (hiddenLayerNeuron == 0){ //SINGLE LAYER
+             for (int i = 0; i < this.instances.numAttributes() - 1; i++) {
+                this.inputNeurons[i] = new Neuron();
+                for (int j = 0; j < this.instances.numClasses() ; j++) {
+                    dummy = new Edge(this.inputNeurons[i], Math.random(), this.outputNeurons[j]);
+                    this.edges.add(dummy);
+                }
+            }
+        }
+        else{ //MULTILAYER
+            for (int i = 0; i < this.instances.numAttributes() - 1; i++) {
+                this.inputNeurons[i] = new Neuron();
+                for (int j = 0; j < this.hiddenLayerNeuron ; j++) {
+                    dummy = new Edge(this.inputNeurons[i], Math.random(), this.hiddenNeurons[j]);
+                    this.edges.add(dummy);
+                }
+            }
+
+            for (int i = 0; i <this.hiddenLayerNeuron; i++) {
+                for (int j = 0; j < this.instances.numClasses(); j++) {
+                    dummy = new Edge(this.hiddenNeurons[i], Math.random(), this.outputNeurons[j]);
+                    this.edges.add(dummy);
+                }
             }
         }
 
-        for (int i = 0; i <this.hiddenLayerNeuron; i++) {
-            for (int j = 0; j < this.instances.numClasses(); j++) {
-                dummy = new Edge(this.hiddenNeurons[i], Math.random(), this.outputNeurons[j]);
-                this.edges.add(dummy);
-            }
-        }
-        
         double sumerr = 999;
         double treshold = 0;
         random = new Random();
