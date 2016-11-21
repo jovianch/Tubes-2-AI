@@ -1,0 +1,43 @@
+@relation edible
+
+@attribute cap-shape  numeric
+@attribute cap-surface {u,f, g, y, s }
+@attribute cap-colour  numeric
+@attribute bruise      {u, t, f } 
+@attribute odor 	{u, a, l, c, y, f, m, n, p, s } 
+@attribute attchmnt  {u,a, d, f, n } 
+@attribute spacing   {u,c, w, d } 
+@attribute size      {u,b, n } 
+@attribute colour    {u,k, n, b, h, g, r, o, p, e, w, y } 
+@attribute shape     {u,e, t } 
+@attribute class {p,e }
+@attribute root      {u,b, c, e, z, r, x } 
+@attribute sAbv      {u,f, y, k, s }
+@attribute sBelw     {u,f, y, k, s }
+@attribute cAbv      {u,n, b, c, g, o, p, e, w, y } 
+@attribute cBelw     {u,n, b, c, g, o, p, e, w, y } 
+@attribute vType     {u,p }
+@attribute vColour   {u,n, o, w, y }
+@attribute rNumber   {u,n, o, t }
+@attribute rType     {u,c, e, f, l, n, p, s, z }
+@attribute sColour   {u,k, n, b, h, r, o, w, y }
+@attribute pop	     {u,a, c, n, s, v, y }
+@attribute habitat   numeric
+
+@data
+2 y 3 f y f c n b t p x s s w w p w o e w v 3
+3 s 1 t f f c b h t p b s s w w p w o p h s 4
+3 y 3 t a f c b w e e r s y w w p w o p k y 3
+3 y 3 t n f c b w t e b s s g g p w o p k v 1
+4 s 3 f n a c b y e e x s s o o p o o p n c 2
+4 y 2 f s f c n b t p x k s w p p w o e w v 3
+1 s 4 f n f w b g e e x k k w w p w t p w s 3
+2 s 4 t p f c n k e p e s s w w p w o p k v 3
+2 f 5 f f f c b h e p b k k b n p w o l h y 1
+2 f 3 t n f c b n t e b s s w g p w o p n y 1
+2 f 2 f n f w b n t e e f f w w p w o e k a 3
+2 f 4 f n f w b n t e e f s w w p w o e n s 3
+2 s 3 f n f c b w e e b y y n n p w t p w y 1
+2 f 3 t n f c b w t e b s s g w p w o p k v 1
+1 s 3 f n a c b o e e x s s o o p o o p n c 2
+4 y 2 f y f c n b t p x k k p w p w o e w v 1
