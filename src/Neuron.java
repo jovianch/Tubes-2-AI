@@ -20,10 +20,9 @@ public class Neuron {
     }
     
     public void setOutput(List<Edge> edge){
-        //BIAS
-        Double jumlah = (Math.random() * 0.1 - 0.1 );
+        double jumlah = (Math.random() * 0.1 - 0.1);
        
-        output = (1 / (1 + (Math.exp(-jumlah))));
+        //output = (1 / (1 + (Math.exp(-jumlah))));
         for (int i = 0; i < edge.size(); i++){
             jumlah = jumlah + (edge.get(i).getSumber().getOutput() * edge.get(i).getWeight());
         }
@@ -43,7 +42,7 @@ public class Neuron {
     }
     
     public void setErrorHidden(List<Edge> edge){
-        double sigma = 0.00;
+        double sigma = 0;
         for (int i = 0; i < edge.size(); i++){
             sigma = sigma + (edge.get(i).getTujuan().getError() * edge.get(i).getWeight());
         }
