@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
+import static java.lang.Math.sqrt;
+
 /**
  * Created by raudi on 11/15/16.
  */
@@ -89,12 +91,16 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
             this.outputNeurons[j] = new Neuron();
         }
 
+        Random r = new Random();
+        double rangeMin = -4*sqrt(6)/sqrt(hiddenLayerNeuron+this.instances.numAttributes()-1);
+        double rangeMax = 4*sqrt(6)/sqrt(hiddenLayerNeuron+this.instances.numAttributes()-1);
+        double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
         Edge dummy = null;
         if (hiddenLayerNeuron == 0){ //SINGLE LAYER
             for (int i = 0; i < this.instances.numAttributes() - 1; i++) {
                 this.inputNeurons[i] = new Neuron();
                 for (int j = 0; j < this.instances.numClasses() ; j++) {
-                    dummy = new Edge(this.inputNeurons[i], Math.random(), this.outputNeurons[j]);
+                    dummy = new Edge(this.inputNeurons[i], randomValue, this.outputNeurons[j]);
                     this.edges.add(dummy);
                 }
             }
@@ -102,14 +108,16 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
             for (int i = 0; i < this.instances.numAttributes() - 1; i++) {
                 this.inputNeurons[i] = new Neuron();
                 for (int j = 0; j < this.hiddenLayerNeuron ; j++) {
-                    dummy = new Edge(this.inputNeurons[i], Math.random(), this.hiddenNeurons[j]);
+                    randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
+                    dummy = new Edge(this.inputNeurons[i], randomValue, this.hiddenNeurons[j]);
                     this.edges.add(dummy);
                 }
             }
 
             for (int i = 0; i <this.hiddenLayerNeuron; i++) {
                 for (int j = 0; j < this.outputNeurons.length; j++) {
-                    dummy = new Edge(this.hiddenNeurons[i], Math.random(), this.outputNeurons[j]);
+                    randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
+                    dummy = new Edge(this.hiddenNeurons[i], randomValue, this.outputNeurons[j]);
                     this.edges.add(dummy);
                 }
             }
@@ -119,10 +127,17 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
         double treshold = 0;
         random = new Random();
         List<Edge> inputEdgeHidden = null;
+        double[] weightTemp = new double[edges.size()];
+        double tempError = 999;
+        double tempErrorCek = 999;
+        int idx = 0;
+        double tempLearningRate = this.learningRate;
         for(int k=0; ((k<epoch) && (sumerr > treshold)); k++) {
             this.instances.randomize(random);
 
-            System.out.println("iterasi ke - " + (k+1));
+            if (k%1000==0) {
+                System.out.println("iterasi ke - " + (k + 1));
+            }
             sumerr = 0;
 
             this.listEdge = new listOfEdge(this.edges);
@@ -168,13 +183,49 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
                     double input = listEdge.getList().get(j).getSumber().getOutput();
                     listEdge.getList().get(j).updateWeight(learningRate, error, input);
                 }
-                
+
 
             }
             sumerr = sumerr / this.instances.numInstances();
-            System.out.println("Error : " + sumerr);
 
+            if (sumerr<tempError) {
+                tempError = sumerr;
+                for (int l=0; l<weightTemp.length; l++) {
+                    weightTemp[l] = listEdge.getList().get(l).getWeight();
+                }
+            }
+
+            if (k%1000==0) {
+                System.out.println("Error : " + sumerr);
+
+                /*if (Math.abs(tempErrorCek - sumerr) > 0.001) {
+                    tempErrorCek = sumerr;
+                    idx = k;
+                    this.learningRate = tempLearningRate;
+                } else {
+                    if (k-idx >= 3000) {
+                        this.learningRate = 1;
+                    }
+                }*/
+            }
+
+
+
+            /*if (k>1000) {
+                if (tempError>0.037) {
+                    for (int l=0; l<weightTemp.length; l++) {
+                        randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
+                        listEdge.getList().get(l).setWeight(randomValue);
+                    }
+                    k=0;
+                    this.learningRate = tempLearningRate;
+                }
+            }*/
         }
+        for (int l=0; l<weightTemp.length; l++) {
+            listEdge.getList().get(l).setWeight(weightTemp[l]);
+        }
+        System.out.println("Error : " + tempError);
 
     }
 
@@ -440,4 +491,3 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
         return maxidx;
     }
 }
-
