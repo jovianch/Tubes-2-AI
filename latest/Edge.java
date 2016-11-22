@@ -6,7 +6,7 @@
 
 /**
  *
- * @author Jovian
+ * @author Jovian & Joshua
  */
 public class Edge implements java.io.Serializable{
     private Neuron sumber;
@@ -39,6 +39,10 @@ public class Edge implements java.io.Serializable{
 
     public void updateWeight(double n, double error, double input){
         weight = weight + n * error * input;
+    }
+    
+    public void setWeight(double w) {
+        this.weight = w;
     }
 
 }

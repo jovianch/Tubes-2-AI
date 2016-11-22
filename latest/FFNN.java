@@ -17,7 +17,7 @@ import java.util.*;
 import static java.lang.Math.sqrt;
 
 /**
- * Created by raudi on 11/15/16.
+ * Created by raudi & joshua on 11/15/16.
  */
 public class FFNN extends AbstractClassifier implements  OptionHandler, WeightedInstancesHandler, Randomizable, java.io.Serializable {
 
@@ -34,7 +34,7 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
     private double learningRate = 0.3;
     private int epoch = 1;
     private double error = 0.0D;
-    private Instances instances;
+    public Instances instances;
     private double[] range;
     private int hiddenLayerNeuron = 5;
 
@@ -208,9 +208,6 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
                     }
                 }*/
             }
-
-
-
             /*if (k>1000) {
                 if (tempError>0.037) {
                     for (int l=0; l<weightTemp.length; l++) {
