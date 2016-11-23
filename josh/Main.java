@@ -92,32 +92,30 @@ public class Main {
     public static Classifier learningFullTraining(Instances dataset, Instances dataset2) {
         Classifier fullTrainingClassifier = null;
         // Initialize classifier
-        if (choice == 1){
-            fullTrainingClassifier = new NB();
-            NB sCls = new NB();
-            try {
-                // Initialize Evaluation
-                Evaluation fullTrainingEvaluation = new Evaluation(dataset2);
-                
-                NB fullTrainingClassifier2 = new NB();
-                
-                // Build classifier and evaluation
-                fullTrainingClassifier2.buildClassifier(dataset);
-                //System.out.println(fullTrainingClassifier);
-                sCls.buildClassifier(dataset2);
-                
-                fullTrainingEvaluation.evaluateModel(fullTrainingClassifier2, sCls.dataset);
+        fullTrainingClassifier = new NB();
+        NB sCls = new NB();
+        try {
+            // Initialize Evaluation
+            Evaluation fullTrainingEvaluation = new Evaluation(dataset2);
 
-                // Print out the result of classifier model and evaluation
-                System.out.println("\nData Learning Using Full-Training Schema\n");
-                //System.out.println(fullTrainingClassifier.toString());
-                System.out.println(fullTrainingEvaluation.toSummaryString());
-                System.out.println(fullTrainingEvaluation.toClassDetailsString());
-                System.out.println(fullTrainingEvaluation.toMatrixString());
+            NB fullTrainingClassifier2 = new NB();
 
-            } catch (Exception e) {
-                    e.printStackTrace();
-            }
+            // Build classifier and evaluation
+            fullTrainingClassifier2.buildClassifier(dataset);
+            //System.out.println(fullTrainingClassifier);
+            sCls.buildClassifier(dataset2);
+
+            fullTrainingEvaluation.evaluateModel(fullTrainingClassifier2, sCls.dataset);
+
+            // Print out the result of classifier model and evaluation
+            System.out.println("\nData Learning Using Full-Training Schema\n");
+            //System.out.println(fullTrainingClassifier.toString());
+            System.out.println(fullTrainingEvaluation.toSummaryString());
+            System.out.println(fullTrainingEvaluation.toClassDetailsString());
+            System.out.println(fullTrainingEvaluation.toMatrixString());
+
+        } catch (Exception e) {
+                e.printStackTrace();
         }
         return fullTrainingClassifier;
     }
@@ -130,34 +128,31 @@ public class Main {
      */
     public static Classifier learningKFoldCrossValidation(Instances dataset, Instances dataset2) {
         Classifier kFoldClassifier = null;
-        
-        if (choice == 1) {
-            // Initialize classifier
-            kFoldClassifier = new NB();
-            NB sCls = new NB();
-            try {
-                // Initialize evaluation
-                Evaluation kFoldCrossValidationEvaluation = new Evaluation(dataset2);
+        // Initialize classifier
+        kFoldClassifier = new NB();
+        NB sCls = new NB();
+        try {
+            // Initialize evaluation
+            Evaluation kFoldCrossValidationEvaluation = new Evaluation(dataset2);
 
-                // Build classifier and evaluation
-                Random rand = new Random(1);  // using seed = 1
-                int folds = 10;
-                kFoldClassifier.buildClassifier(dataset);
-                //System.out.println(kFoldClassifier);
-                sCls.buildClassifier(dataset2);
-                //System.out.println(sCls.dataset);
-                kFoldCrossValidationEvaluation.crossValidateModel(kFoldClassifier, sCls.dataset, folds, rand);                
+            // Build classifier and evaluation
+            Random rand = new Random(1);  // using seed = 1
+            int folds = 10;
+            kFoldClassifier.buildClassifier(dataset);
+            //System.out.println(kFoldClassifier);
+            sCls.buildClassifier(dataset2);
+            //System.out.println(sCls.dataset);
+            kFoldCrossValidationEvaluation.crossValidateModel(kFoldClassifier, sCls.dataset, folds, rand);                
 
-                // Print out the result of classifier model and evaluation
-                System.out.println("\nData Learning Using 10-Fold Cross Validation Schema\n");
-                //System.out.println(kFoldClassifier.toString());
-                System.out.println(kFoldCrossValidationEvaluation.toSummaryString());
-                System.out.println(kFoldCrossValidationEvaluation.toClassDetailsString());
-                System.out.println(kFoldCrossValidationEvaluation.toMatrixString());
+            // Print out the result of classifier model and evaluation
+            System.out.println("\nData Learning Using 10-Fold Cross Validation Schema\n");
+            //System.out.println(kFoldClassifier.toString());
+            System.out.println(kFoldCrossValidationEvaluation.toSummaryString());
+            System.out.println(kFoldCrossValidationEvaluation.toClassDetailsString());
+            System.out.println(kFoldCrossValidationEvaluation.toMatrixString());
 
-            } catch (Exception e) {
-                    e.printStackTrace();
-            }
+        } catch (Exception e) {
+                e.printStackTrace();
         }
         return kFoldClassifier;
     }
