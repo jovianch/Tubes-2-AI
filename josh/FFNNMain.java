@@ -235,19 +235,48 @@ public class FFNNMain {
         System.out.print("Enter filename: ");
         Scanner nama = new Scanner(System.in);
         filename = nama.next();
-                
+
+        double updateValue;
+
         Instances dataset = null;
         dataset = readDataset(filename);
         Instances preDisc = null;
         preDisc = readDataset(filename);
 
         FFNN neural2 = new FFNN();
-        if (read) {
+        /*if (read) {
             neural2 = (FFNN) weka.core.SerializationHelper.read("FFNN3v1.model");
             System.out.println(neural2);
-        }
+        }*/
 
-        //FFNN fullt = new FFNN();
+        //SPLIT TEST EEK
+            dataset.randomize(new java.util.Random(0));
+            int trainSize = (int) Math.round(dataset.numInstances() * 0.8);
+            int testSize = dataset.numInstances() - trainSize;
+            Instances train = new Instances(dataset, 0, trainSize);
+            Instances test = new Instances(dataset, trainSize, testSize);
+
+            String[] options = new String[6];
+            options[0]="-H";
+            options[1]="37";
+            options[2]="-L";
+            options[3]="1";
+            options[4]="-N";
+            options[5]="300";
+            neural2.setOptions(options);
+            neural2.buildClassifier(train);
+            for (int i = 0; i < test.size(); i++) {
+                for (int j = 0; j < test.numAttributes(); j++) {
+                    //Normalization
+                    if (test.classIndex() != j) {
+                        updateValue = test.instance(i).value(j) / neural2.getRange(j);
+                        test.instance(i).setValue(j, updateValue);
+                    }
+                }
+            }
+        //SPLIT TEST EEK
+
+
         // Build classifier and evaluation
         /*String[] options = new String[6];
         options[0]="-H";
@@ -258,8 +287,7 @@ public class FFNNMain {
         options[5]="300";
         neural2.setOptions(options);
         neural2.buildClassifier(dataset);*/
-        double updateValue;
-        for (int i = 0; i < dataset.size(); i++) {
+        /*for (int i = 0; i < dataset.size(); i++) {
             for (int j = 0; j < dataset.numAttributes(); j++) {
                 //Normalization
                 if (dataset.classIndex() != j) {
@@ -267,15 +295,15 @@ public class FFNNMain {
                     dataset.instance(i).setValue(j, updateValue);
                 }
             }
-        }
+        }*/
         //learningKFoldCrossValidation(neural2, dataset);
-        learningFullTraining(neural2, dataset);
+        learningFullTraining(neural2, test);
 
-        /*if (save) {
-            weka.core.SerializationHelper.write("FFNN3v2.model", neural2);
+        if (save) {
+            weka.core.SerializationHelper.write("FFNN6v1.model", neural2);
             System.out.println("Save successfully");
             //weka.core.SerializationHelper.write("FFNNKF.model", FFNNKF);
-        }*/
+        }
         Instance in = createInstanceFromInputUser(neural2.getInstances(),dataset);
 
         for (int j = 0; j < neural2.getInstances().numAttributes(); j++) {
