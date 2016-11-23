@@ -53,5 +53,7 @@ public class Neuron implements java.io.Serializable {
     public double getError(){
         return error;
     }
+
+    public void setError(double e) { error = e; }
     
 }

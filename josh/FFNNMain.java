@@ -23,7 +23,7 @@ import weka.filters.unsupervised.attribute.Remove;
  *
  * @author Joshua & Alif
  */
-public class Main {
+public class FFNNMain {
     private static int index = 0;
     /**
     * This method reads .arff file and convert it to dataset
@@ -31,7 +31,7 @@ public class Main {
     * @param file : .arff file name and directory for making a dataset
     * @return dataset
     */
-    public static Instances readDataset(String file) throws Exception {
+    public static Instances readDataset(String file) {
  
         // Initialize instances/dataset
         Instances dataset = null;
@@ -46,120 +46,100 @@ public class Main {
             boolean found = false;
             for (i = 0;(i < dataset.numAttributes())&&(!found);i++) {
                 nama = dataset.attribute(i).name();
-                if (nama.equals("Dalc")) {
+                if (nama.equals("Walc")) {
                     found = true;
                     index = i;
                 }
             }
+            idxdel = index;
             if (i == dataset.numAttributes()) {
                 index = dataset.numAttributes()-1;
             }
-            idxdel = index + 2;
+
             dataset.setClassIndex(index);
-            
+
             String idxdel_str = Integer.toString(idxdel);
-
             System.out.println(idxdel_str);
-
             Remove remove = new Remove();
-
             remove.setAttributeIndices(idxdel_str);
-
             try {
                 remove.setInputFormat(dataset);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            
-            Instances instNew = Filter.useFilter(dataset, remove);
 
+            Instances instNew = Filter.useFilter(dataset, remove);
+            //instNew.setClassIndex(dataset.classIndex());
             // Print out the notification
             System.out.println("\nDataset have been read from iris.arff successfully\n");
-
-            dataset = instNew;          
+            dataset = instNew;
+            System.out.println(dataset.classIndex());
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-           return dataset;
+        return dataset;
     }
     
     /**
      * This method does data learning by full-training schema
      *
-     * @param discretizedDataset : dataset that have been filtered by Discretize filter
+     * @param  : dataset that have been filtered by Discretize filter
          * @return fullTrainingClassifier : classifier after learning
      */
-    public static Classifier learningFullTraining(Instances dataset, Instances dataset2) {
-        Classifier fullTrainingClassifier = null;
+    public static void learningFullTraining(Classifier fullTrainingClassifier, Instances dataset) {
         // Initialize classifier
-        if (choice == 1){
-            fullTrainingClassifier = new NB();
-            NB sCls = new NB();
-            try {
-                // Initialize Evaluation
-                Evaluation fullTrainingEvaluation = new Evaluation(dataset2);
-                
-                NB fullTrainingClassifier2 = new NB();
-                
-                // Build classifier and evaluation
-                fullTrainingClassifier2.buildClassifier(dataset);
-                //System.out.println(fullTrainingClassifier);
-                sCls.buildClassifier(dataset2);
-                
-                fullTrainingEvaluation.evaluateModel(fullTrainingClassifier2, sCls.dataset);
 
-                // Print out the result of classifier model and evaluation
-                System.out.println("\nData Learning Using Full-Training Schema\n");
-                //System.out.println(fullTrainingClassifier.toString());
-                System.out.println(fullTrainingEvaluation.toSummaryString());
-                System.out.println(fullTrainingEvaluation.toClassDetailsString());
-                System.out.println(fullTrainingEvaluation.toMatrixString());
+        try {
+            // Initialize Evaluation
+            Evaluation fullTrainingEvaluation = new Evaluation(dataset);
 
-            } catch (Exception e) {
-                    e.printStackTrace();
-            }
+
+            fullTrainingEvaluation.evaluateModel(fullTrainingClassifier, dataset);
+
+            // Print out the result of classifier model and evaluation
+            System.out.println("\nData Learning Using Full-Training Schema\n");
+            System.out.println(fullTrainingClassifier.toString());
+            System.out.println(fullTrainingEvaluation.toSummaryString());
+            System.out.println(fullTrainingEvaluation.toClassDetailsString());
+            System.out.println(fullTrainingEvaluation.toMatrixString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return fullTrainingClassifier;
+
     }
 
     /**
      * This method does data learning by 10-fold cross validation schema
      *
-     * @param discretizedDataset : dataset that have been filtered by Discretize filter
+     * @param  : dataset that have been filtered by Discretize filter
          * @return fullTrainingClassifier : classifier after learning
      */
-    public static Classifier learningKFoldCrossValidation(Instances dataset, Instances dataset2) {
-        Classifier kFoldClassifier = null;
-        
-        if (choice == 1) {
-            // Initialize classifier
-            kFoldClassifier = new NB();
-            NB sCls = new NB();
-            try {
-                // Initialize evaluation
-                Evaluation kFoldCrossValidationEvaluation = new Evaluation(dataset2);
+    public static void learningKFoldCrossValidation(Classifier kFoldClassifier, Instances dataset) {
 
-                // Build classifier and evaluation
-                Random rand = new Random(1);  // using seed = 1
-                int folds = 10;
-                kFoldClassifier.buildClassifier(dataset);
-                //System.out.println(kFoldClassifier);
-                sCls.buildClassifier(dataset2);
-                //System.out.println(sCls.dataset);
-                kFoldCrossValidationEvaluation.crossValidateModel(kFoldClassifier, sCls.dataset, folds, rand);                
+        try {
+            // Initialize evaluation
+            Evaluation kFoldCrossValidationEvaluation = new Evaluation(dataset);
 
-                // Print out the result of classifier model and evaluation
-                System.out.println("\nData Learning Using 10-Fold Cross Validation Schema\n");
-                //System.out.println(kFoldClassifier.toString());
-                System.out.println(kFoldCrossValidationEvaluation.toSummaryString());
-                System.out.println(kFoldCrossValidationEvaluation.toClassDetailsString());
-                System.out.println(kFoldCrossValidationEvaluation.toMatrixString());
+            // Build classifier and evaluation
+            Random rand = new Random(1);  // using seed = 1
+            int folds = 10;
 
-            } catch (Exception e) {
-                    e.printStackTrace();
-            }
+            kFoldCrossValidationEvaluation.crossValidateModel(kFoldClassifier, dataset, folds, rand);
+
+            // Print out the result of classifier model and evaluation
+            System.out.println("\nData Learning Using 10-Fold Cross Validation Schema\n");
+            System.out.println(kFoldClassifier.toString());
+            System.out.println(kFoldCrossValidationEvaluation.toSummaryString());
+            System.out.println(kFoldCrossValidationEvaluation.toClassDetailsString());
+            System.out.println(kFoldCrossValidationEvaluation.toMatrixString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return kFoldClassifier;
+
     }
         
     /**
@@ -260,38 +240,61 @@ public class Main {
         dataset = readDataset(filename);
         Instances preDisc = null;
         preDisc = readDataset(filename);
-        Instances testdata = null;
-        System.out.print("Enter test filename: ");        
-        String filename2 = nama.next();        
-        testdata = readDataset(filename2);
-        
-        Discretize discretize = new Discretize();
 
-        NB bayes1 = new NB();
+        FFNN neural2 = new FFNN();
+        if (read) {
+            neural2 = (FFNN) weka.core.SerializationHelper.read("FFNN3v1.model");
+            System.out.println(neural2);
+        }
 
-        bayes1.buildClassifier(dataset);
-
-        Classifier kfold = learningKFoldCrossValidation(bayes1.dataset, testdata);
-
-        Classifier fullt = learningFullTraining(bayes1.dataset, testdata);
-//            System.out.println(bayes1);
-/*
-            Instance in = createInstanceFromInputUser(bayes1.dataset, preDisc);
-            //System.out.println("The instance is " + in);
-            Instance fi = makeDiscretizeInstance(discretize, dataset, in);
-            double x[] = bayes1.distributionForInstance(fi);
-            for(int k=0; k<bayes1.n_index_value; k++){
-                System.out.println(bayes1.dataset.attribute(bayes1.index).value(k) + " - " + x[k]);
+        //FFNN fullt = new FFNN();
+        // Build classifier and evaluation
+        /*String[] options = new String[6];
+        options[0]="-H";
+        options[1]="37";
+        options[2]="-L";
+        options[3]="1";
+        options[4]="-N";
+        options[5]="300";
+        neural2.setOptions(options);
+        neural2.buildClassifier(dataset);*/
+        double updateValue;
+        for (int i = 0; i < dataset.size(); i++) {
+            for (int j = 0; j < dataset.numAttributes(); j++) {
+                //Normalization
+                if (dataset.classIndex() != j) {
+                    updateValue = dataset.instance(i).value(j) / neural2.getRange(j);
+                    dataset.instance(i).setValue(j, updateValue);
+                }
             }
-            int res = (int) bayes1.classifyInstance(fi);
-            System.out.println("Result: " + bayes1.dataset.attribute(bayes1.index).value(res));
-            nama.next();
-  */
-        weka.core.SerializationHelper.write("NBkf.model", kfold);
+        }
+        //learningKFoldCrossValidation(neural2, dataset);
+        learningFullTraining(neural2, dataset);
 
-            //NB bayes2 = new NB();
-            //bayes2 = (NB) weka.core.SerializationHelper.read("NB.model");
-            //print matriks nya
-            //System.out.println(bayes2);
+        /*if (save) {
+            weka.core.SerializationHelper.write("FFNN3v2.model", neural2);
+            System.out.println("Save successfully");
+            //weka.core.SerializationHelper.write("FFNNKF.model", FFNNKF);
+        }*/
+        Instance in = createInstanceFromInputUser(neural2.getInstances(),dataset);
+
+        for (int j = 0; j < neural2.getInstances().numAttributes(); j++) {
+            //Normalization
+            if (neural2.getInstances().classIndex() != j) {
+                updateValue = in.value(j) / neural2.getRange(j);
+                in.setValue(j, updateValue);
+            }
+        }
+        //System.out.println(neural1);
+
+        double x[] = neural2.distributionForInstance(in);
+        for(int k=0; k < neural2.getInstances().numClasses(); k++){
+            System.out.println(x[k]);
+        }
+
+        int res = (int) neural2.classifyInstance(in);
+
+        System.out.println("Result: " + neural2.getInstances().attribute(neural2.getInstances().classIndex()).value(res));
+
     }
 }
