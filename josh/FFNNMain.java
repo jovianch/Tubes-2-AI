@@ -238,44 +238,24 @@ public class FFNNMain {
 
         double updateValue;
 
-        Instances dataset = null;
-        dataset = readDataset(filename);
-        Instances preDisc = null;
-        preDisc = readDataset(filename);
+        Instances datasetFT = null;
+        datasetFT = readDataset(filename);
+        Instances datasetKF = null;
+        datasetKF = readDataset(filename);
+        Instances datasetST = null;
+        datasetST = readDataset(filename);
 
-        FFNN neural2 = new FFNN();
-        /*if (read) {
-            neural2 = (FFNN) weka.core.SerializationHelper.read("FFNN3v1.model");
-            System.out.println(neural2);
-        }*/
-
-        //SPLIT TEST EEK
-            dataset.randomize(new java.util.Random(0));
-            int trainSize = (int) Math.round(dataset.numInstances() * 0.8);
-            int testSize = dataset.numInstances() - trainSize;
-            Instances train = new Instances(dataset, 0, trainSize);
-            Instances test = new Instances(dataset, trainSize, testSize);
-
-            String[] options = new String[6];
-            options[0]="-H";
-            options[1]="37";
-            options[2]="-L";
-            options[3]="1";
-            options[4]="-N";
-            options[5]="300";
-            neural2.setOptions(options);
-            neural2.buildClassifier(train);
-            for (int i = 0; i < test.size(); i++) {
-                for (int j = 0; j < test.numAttributes(); j++) {
-                    //Normalization
-                    if (test.classIndex() != j) {
-                        updateValue = test.instance(i).value(j) / neural2.getRange(j);
-                        test.instance(i).setValue(j, updateValue);
-                    }
-                }
-            }
-        //SPLIT TEST EEK
-
+        FFNN classifierFT = new FFNN();
+        FFNN classifierKF = new FFNN();
+        FFNN classifierST = new FFNN();
+        if (read) {
+            classifierFT = (FFNN) weka.core.SerializationHelper.read("FFNN-Student-Wacl-FT.model");
+            System.out.println(classifierFT);
+            classifierKF = (FFNN) weka.core.SerializationHelper.read("FFNN-Student-Wacl-KF.model");
+            System.out.println(classifierKF);
+            classifierST = (FFNN) weka.core.SerializationHelper.read("FFNN-Student-Wacl-ST.model");
+            System.out.println(classifierST);
+        }
 
         // Build classifier and evaluation
         /*String[] options = new String[6];
@@ -285,44 +265,85 @@ public class FFNNMain {
         options[3]="1";
         options[4]="-N";
         options[5]="300";
-        neural2.setOptions(options);
-        neural2.buildClassifier(dataset);*/
-        /*for (int i = 0; i < dataset.size(); i++) {
-            for (int j = 0; j < dataset.numAttributes(); j++) {
+        classifierFT.setOptions(options);
+        classifierFT.buildClassifier(datasetFT);*/
+
+        //NORMALIZE
+        for (int i = 0; i < datasetFT.size(); i++) {
+            for (int j = 0; j < datasetFT.numAttributes(); j++) {
                 //Normalization
-                if (dataset.classIndex() != j) {
-                    updateValue = dataset.instance(i).value(j) / neural2.getRange(j);
-                    dataset.instance(i).setValue(j, updateValue);
+                if (datasetFT.classIndex() != j) {
+                    updateValue = datasetFT.instance(i).value(j) / classifierFT.getRange(j);
+                    datasetFT.instance(i).setValue(j, updateValue);
                 }
             }
-        }*/
-        //learningKFoldCrossValidation(neural2, dataset);
-        learningFullTraining(neural2, test);
+        }
+        for (int i = 0; i < datasetKF.size(); i++) {
+            for (int j = 0; j < datasetKF.numAttributes(); j++) {
+                //Normalization
+                if (datasetKF.classIndex() != j) {
+                    updateValue = datasetKF.instance(i).value(j) / classifierKF.getRange(j);
+                    datasetKF.instance(i).setValue(j, updateValue);
+                }
+            }
+        }
 
-        if (save) {
-            weka.core.SerializationHelper.write("FFNN6v1.model", neural2);
+        //SPLIT TEST
+        datasetST.randomize(new java.util.Random(0));
+        int trainSize = (int) Math.round(datasetST.numInstances() * 0.8);
+        int testSize = datasetST.numInstances() - trainSize;
+        Instances train = new Instances(datasetST, 0, trainSize);
+        Instances test = new Instances(datasetST, trainSize, testSize);
+
+        String[] optionsST = new String[6];
+        optionsST[0]="-H";
+        optionsST[1]="37";
+        optionsST[2]="-L";
+        optionsST[3]="1";
+        optionsST[4]="-N";
+        optionsST[5]="300";
+        classifierST.setOptions(optionsST);
+        classifierST.buildClassifier(train);
+        for (int i = 0; i < test.size(); i++) {
+            for (int j = 0; j < test.numAttributes(); j++) {
+                //Normalization
+                if (test.classIndex() != j) {
+                    updateValue = test.instance(i).value(j) / classifierST.getRange(j);
+                    test.instance(i).setValue(j, updateValue);
+                }
+            }
+        }
+        //SPLIT TEST
+
+        learningFullTraining(classifierFT, datasetFT);
+        learningKFoldCrossValidation(classifierKF, datasetKF);
+        learningFullTraining(classifierST, test);
+
+
+        /*if (save) {
+            weka.core.SerializationHelper.write("FFNN8v1.model", classifierFT);
             System.out.println("Save successfully");
             //weka.core.SerializationHelper.write("FFNNKF.model", FFNNKF);
-        }
-        Instance in = createInstanceFromInputUser(neural2.getInstances(),dataset);
+        }*/
+        Instance in = createInstanceFromInputUser(classifierFT.getInstances(),datasetFT);
 
-        for (int j = 0; j < neural2.getInstances().numAttributes(); j++) {
+        for (int j = 0; j < classifierFT.getInstances().numAttributes(); j++) {
             //Normalization
-            if (neural2.getInstances().classIndex() != j) {
-                updateValue = in.value(j) / neural2.getRange(j);
+            if (classifierFT.getInstances().classIndex() != j) {
+                updateValue = in.value(j) / classifierFT.getRange(j);
                 in.setValue(j, updateValue);
             }
         }
         //System.out.println(neural1);
 
-        double x[] = neural2.distributionForInstance(in);
-        for(int k=0; k < neural2.getInstances().numClasses(); k++){
+        double x[] = classifierFT.distributionForInstance(in);
+        for(int k=0; k < classifierFT.getInstances().numClasses(); k++){
             System.out.println(x[k]);
         }
 
-        int res = (int) neural2.classifyInstance(in);
+        int res = (int) classifierFT.classifyInstance(in);
 
-        System.out.println("Result: " + neural2.getInstances().attribute(neural2.getInstances().classIndex()).value(res));
+        System.out.println("Result: " + classifierFT.getInstances().attribute(classifierFT.getInstances().classIndex()).value(res));
 
     }
 }
