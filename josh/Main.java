@@ -269,6 +269,19 @@ public class Main {
         Classifier kfold = learningKFoldCrossValidation(bayes1.dataset, testdata);
 
         Classifier fullt = learningFullTraining(bayes1.dataset, testdata);
+        
+        dataset.randomize(new java.util.Random(0));
+        int trainSize = (int) Math.round(dataset.numInstances() * 0.8);
+        int testSize = dataset.numInstances() - trainSize;
+        Instances train = new Instances(dataset, 0, trainSize);
+        Instances test = new Instances(dataset, trainSize, testSize);
+        
+        NB bayes2 = new NB();
+
+        bayes2.buildClassifier(train);
+        
+        System.out.println("Split Test");
+        Classifier splitCls = learningFullTraining(bayes2.dataset, test);
 //            System.out.println(bayes1);
 /*
             Instance in = createInstanceFromInputUser(bayes1.dataset, preDisc);
