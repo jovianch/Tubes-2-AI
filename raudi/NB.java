@@ -146,9 +146,6 @@ public class NB extends AbstractClassifier {
             for(int i=0; i<n_attribute; i++){
                 if(i!=index){
                     int x1 = (int) instnc.value(instnc.attribute(i));
-                    //System.out.println(x1 + " - " + M[i][x1][k]);
-                    //System.out.println(i);
-                    //System.out.println(instnc.value(instnc.attribute(i)));
                     resultArr[k] = resultArr[k] * M[i][x1][k];
                 }
             }

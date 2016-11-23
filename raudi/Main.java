@@ -11,6 +11,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.supervised.attribute.Discretize;
+import weka.filters.unsupervised.attribute.Remove;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -42,27 +43,43 @@ public class Main {
             dataset = new Instances(breader);
 
             String nama = "";
-            int i;
+            int i, idxdel;
             boolean found = false;
             for (i = 0;(i < dataset.numAttributes())&&(!found);i++) {
                 nama = dataset.attribute(i).name();
-                if (nama.equals("class")) {
+                if (nama.equals("Dalc")) {
                     found = true;
                     index = i;
                 }
             }
+            idxdel = index+2;
             if (i == dataset.numAttributes()) {
                 index = dataset.numAttributes()-1;
             }
 
             dataset.setClassIndex(index);
 
+            String idxdel_str = Integer.toString(idxdel);
+            System.out.println(idxdel_str);
+            Remove remove = new Remove();
+            remove.setAttributeIndices(idxdel_str);
+            try {
+                remove.setInputFormat(dataset);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Instances instNew = Filter.useFilter(dataset, remove);
             // Print out the notification
             System.out.println("\nDataset have been read from iris.arff successfully\n");
+            dataset = instNew;
+
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-           return dataset;
+        return dataset;
     }
     
     /**
@@ -71,7 +88,7 @@ public class Main {
      * @param  : dataset that have been filtered by Discretize filter
          * @return fullTrainingClassifier : classifier after learning
      */
-    public static Classifier learningFullTraining(Classifier fullTrainingClassifier, Instances dataset) {
+    public static void learningFullTraining(Classifier fullTrainingClassifier, Instances dataset) {
         // Initialize classifier
         if (choice == 1){
             //fullTrainingClassifier = new NB();
@@ -94,37 +111,25 @@ public class Main {
                     e.printStackTrace();
             }
         } else if (choice == 2) {
-            //fullTrainingClassifier = new FFNN();
             try {
-                FFNN FTC = (FFNN) fullTrainingClassifier;
                 // Initialize Evaluation
                 Evaluation fullTrainingEvaluation = new Evaluation(dataset);
 
-                // Build classifier and evaluation
-                String[] options = new String[6];
-                options[0]="-H";
-                options[1]="22";
-                options[2]="-L";
-                options[3]="1";
-                options[4]="-N";
-                options[5]="10000";
-                //FTC.setOptions(options);
-                //FTC.buildClassifier(dataset);
-                fullTrainingEvaluation.evaluateModel(FTC, dataset);
+
+                fullTrainingEvaluation.evaluateModel(fullTrainingClassifier, dataset);
 
                 // Print out the result of classifier model and evaluation
                 System.out.println("\nData Learning Using Full-Training Schema\n");
-                System.out.println(FTC.toString());
+                System.out.println(fullTrainingClassifier.toString());
                 System.out.println(fullTrainingEvaluation.toSummaryString());
                 System.out.println(fullTrainingEvaluation.toClassDetailsString());
                 System.out.println(fullTrainingEvaluation.toMatrixString());
 
-                //fullTrainingClassifier = FTC;
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return fullTrainingClassifier;
+        //return fullTrainingClassifier;
     }
 
     /**
@@ -308,10 +313,17 @@ public class Main {
 
             bayes1.buildClassifier(dataset);
 
-            Classifier kfold = learningKFoldCrossValidation(bayes1, bayes1.dataset);
-            Classifier fullt = learningFullTraining(bayes1, bayes1.dataset);
+            System.out.print("Enter filename for test: ");
+            String filename2 = "";
+            filename2 = nama.next();
+            Instances dataset2 = null;
+            dataset2 = readDataset(filename2);
 
-            System.out.println(bayes1);
+            Classifier kfold = learningKFoldCrossValidation(bayes1, dataset2);
+
+            learningFullTraining(bayes1, dataset2);
+
+            //System.out.println(bayes1);
 
             Instance in = createInstanceFromInputUser(bayes1.dataset, preDisc);
             //System.out.println("The instance is " + in);
@@ -330,46 +342,64 @@ public class Main {
             //print matriks nya
             System.out.println(bayes2);
         } else if (choice == 2) {
-            FFNN neural1 = new FFNN();
+            //FFNN neural1 = new FFNN();
             
             //neural1.buildClassifier(dataset);
 
-            FFNN neural2 = null;
+            FFNN neural2 = new FFNN();
             if (read) {
-                neural2 = (FFNN) weka.core.SerializationHelper.read("FFNNKF2.model");
+                neural2 = (FFNN) weka.core.SerializationHelper.read("FFNNKF4.model");
                 System.out.println(neural2);
             }
             
-            FFNN fullt = new FFNN();
-            
+            //FFNN fullt = new FFNN();
+            // Build classifier and evaluation
+            /*String[] options = new String[6];
+            options[0]="-H";
+            options[1]="37";
+            options[2]="-L";
+            options[3]="1";
+            options[4]="-N";
+            options[5]="200";
+            neural2.setOptions(options);
+            neural2.buildClassifier(dataset);*/
             //Classifier kfold = learningKFoldCrossValidation(neural1, neural1.getInstances());
-            fullt = (FFNN) learningFullTraining(neural2, dataset);
+            double updateValue;
+            for (int i = 0; i < dataset.size(); i++) {
+                for (int j = 0; j < dataset.numAttributes(); j++) {
+                    //Normalization
+                    if (dataset.classIndex() != j) {
+                        updateValue = dataset.instance(i).value(j) / neural2.getRange(j);
+                        dataset.instance(i).setValue(j, updateValue);
+                    }
+                }
+            }
+            learningFullTraining(neural2, dataset);
 
             /*if (save) {
-                weka.core.SerializationHelper.write("FFNNKF2.model", fullt);
+                weka.core.SerializationHelper.write("FFNNKF4.model", neural2);
                 System.out.println("Save successfully");
                 //weka.core.SerializationHelper.write("FFNNKF.model", FFNNKF);
             }*/
-            Instance in = createInstanceFromInputUser(fullt.getInstances(),preDisc);
+            Instance in = createInstanceFromInputUser(neural2.getInstances(),dataset);
             
-            double updateValue;
-            for (int j = 0; j < fullt.getInstances().numAttributes(); j++) {
+            for (int j = 0; j < neural2.getInstances().numAttributes(); j++) {
                 //Normalization
-                if (fullt.getInstances().classIndex() != j) {
-                    updateValue = in.value(j) / fullt.getRange(j);
+                if (neural2.getInstances().classIndex() != j) {
+                    updateValue = in.value(j) / neural2.getRange(j);
                     in.setValue(j, updateValue);
                 }
             }
             //System.out.println(neural1);
             
-            double x[] = fullt.distributionForInstance(in);
-            for(int k=0; k < fullt.getInstances().numClasses(); k++){
+            double x[] = neural2.distributionForInstance(in);
+            for(int k=0; k < neural2.getInstances().numClasses(); k++){
                 System.out.println(x[k]);
             }
 
-            int res = (int) fullt.classifyInstance(in);
+            int res = (int) neural2.classifyInstance(in);
 
-            System.out.println("Result: " + fullt.getInstances().attribute(fullt.getInstances().classIndex()).value(res));
+            System.out.println("Result: " + neural2.getInstances().attribute(neural2.getInstances().classIndex()).value(res));
             //System.out.println(FFNNFT);
             //nama.next();
 

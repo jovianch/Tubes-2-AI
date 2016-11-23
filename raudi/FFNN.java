@@ -21,22 +21,35 @@ import static java.lang.Math.sqrt;
  */
 public class FFNN extends AbstractClassifier implements  OptionHandler, WeightedInstancesHandler, Randomizable, java.io.Serializable {
 
-    private Neuron[] inputNeurons = null;
-    private Neuron[] hiddenNeurons = null;
-    private Neuron[] outputNeurons = null;
-
-    private List<Edge> edges = null;
-    private listOfEdge listEdge = null;
-    private boolean isNumeric;
+    private Neuron[] inputNeurons;
+    private Neuron[] hiddenNeurons;
+    private Neuron[] outputNeurons;
+    private List<Edge> edges;
+    private listOfEdge listEdge;
     private Random random;
-    private Discretize discretize;
     private boolean isNormalizeAttributes;
-    private double learningRate = 0.3;
-    private int epoch = 1;
-    private double error = 0.0D;
+    private double learningRate;
+    private int epoch;
+    private double error;
     public Instances instances;
     private double[] range;
-    private int hiddenLayerNeuron = 5;
+    private int hiddenLayerNeuron;
+
+    public FFNN() {
+        inputNeurons = null;
+        hiddenNeurons = null;
+        outputNeurons = null;
+        edges = null;
+        listEdge = null;
+        random = null;
+        isNormalizeAttributes = false;
+        learningRate = 0.3;
+        epoch = 1;
+        error = 0.0D;
+        instances = null;
+        range = null;
+        hiddenLayerNeuron = 5;
+    }
 
     @Override
     public void buildClassifier(Instances instances) throws Exception {
@@ -135,9 +148,9 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
         for(int k=0; ((k<epoch) && (sumerr > treshold)); k++) {
             this.instances.randomize(random);
 
-            if (k%1000==0) {
+            //if (k%1000==0) {
                 System.out.println("iterasi ke - " + (k + 1));
-            }
+            //}
             sumerr = 0;
 
             this.listEdge = new listOfEdge(this.edges);
@@ -195,7 +208,7 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
                 }
             }
 
-            if (k%1000==0) {
+            //if (k%1000==0) {
                 System.out.println("Error : " + sumerr);
 
                 /*if (Math.abs(tempErrorCek - sumerr) > 0.001) {
@@ -207,7 +220,7 @@ public class FFNN extends AbstractClassifier implements  OptionHandler, Weighted
                         this.learningRate = 1;
                     }
                 }*/
-            }
+            //}
             /*if (k>1000) {
                 if (tempError>0.037) {
                     for (int l=0; l<weightTemp.length; l++) {
