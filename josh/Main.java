@@ -173,12 +173,11 @@ public class Main {
                 // Build classifier and evaluation
                 Random rand = new Random(1);  // using seed = 1
                 int folds = 10;
-
                 kFoldClassifier.buildClassifier(dataset);
                 //System.out.println(kFoldClassifier);
                 sCls.buildClassifier(dataset2);
-                System.out.println(sCls.dataset);
-                //kFoldCrossValidationEvaluation.crossValidateModel(kFoldClassifier, dataset2, folds, rand);                
+                //System.out.println(sCls.dataset);
+                kFoldCrossValidationEvaluation.crossValidateModel(kFoldClassifier, sCls.dataset, folds, rand);                
 
                 // Print out the result of classifier model and evaluation
                 System.out.println("\nData Learning Using 10-Fold Cross Validation Schema\n");
@@ -342,12 +341,12 @@ public class Main {
 
             bayes1.buildClassifier(dataset);
 
-  //          Classifier kfold = learningKFoldCrossValidation(bayes1.dataset, testdata);
+          Classifier kfold = learningKFoldCrossValidation(bayes1.dataset, testdata);
 
             Classifier fullt = learningFullTraining(bayes1.dataset, testdata);
-/*
-            System.out.println(bayes1);
 
+//            System.out.println(bayes1);
+/*
             Instance in = createInstanceFromInputUser(bayes1.dataset, preDisc);
             //System.out.println("The instance is " + in);
             Instance fi = makeDiscretizeInstance(discretize, dataset, in);
@@ -358,13 +357,14 @@ public class Main {
             int res = (int) bayes1.classifyInstance(fi);
             System.out.println("Result: " + bayes1.dataset.attribute(bayes1.index).value(res));
             nama.next();
-            weka.core.SerializationHelper.write("NB.model", bayes1);
+  */
+            weka.core.SerializationHelper.write("NBkf.model", kfold);
 
-            NB bayes2 = new NB();
-            bayes2 = (NB) weka.core.SerializationHelper.read("NB.model");
+            //NB bayes2 = new NB();
+            //bayes2 = (NB) weka.core.SerializationHelper.read("NB.model");
             //print matriks nya
-            System.out.println(bayes2);
-*/
+            //System.out.println(bayes2);
+
         } else if (choice == 2) {
             FFNN neural1 = new FFNN();
             
