@@ -46,7 +46,7 @@ public class Main {
             boolean found = false;
             for (i = 0;(i < dataset.numAttributes())&&(!found);i++) {
                 nama = dataset.attribute(i).name();
-                if (nama.equals("Dalc")) {
+                if (nama.equals("Walc")) {
                     found = true;
                     index = i;
                 }
@@ -54,7 +54,7 @@ public class Main {
             if (i == dataset.numAttributes()) {
                 index = dataset.numAttributes()-1;
             }
-            idxdel = index + 2;
+            idxdel = index;
             dataset.setClassIndex(index);
             
             String idxdel_str = Integer.toString(idxdel);
@@ -113,7 +113,7 @@ public class Main {
             System.out.println(fullTrainingEvaluation.toSummaryString());
             System.out.println(fullTrainingEvaluation.toClassDetailsString());
             System.out.println(fullTrainingEvaluation.toMatrixString());
-
+            return fullTrainingClassifier2;
         } catch (Exception e) {
                 e.printStackTrace();
         }
@@ -245,36 +245,42 @@ public class Main {
     
     public static void main(String[] argv) throws Exception {
         // Baca file arff
-        boolean save = true, read = true;
+        boolean save = true, read = true, load = true;
         String filename = "";
         System.out.print("Enter filename: ");
         Scanner nama = new Scanner(System.in);
         filename = nama.next();
-                
-        Instances dataset = null;
-        dataset = readDataset(filename);
-        Instances preDisc = null;
-        preDisc = readDataset(filename);
+
+        NB bayes1 = null;
+
+        if(load==false){
+            Instances dataset = null;
+            dataset = readDataset(filename);
+            Instances preDisc = null;
+            preDisc = readDataset(filename);
+            
+            bayes1 = new NB();
+            bayes1.buildClassifier(dataset);
+        }
+        else{
+            bayes1 = (NB) weka.core.SerializationHelper.read(filename);
+        }
         Instances testdata = null;
         System.out.print("Enter test filename: ");        
         String filename2 = nama.next();        
         testdata = readDataset(filename2);
         
         Discretize discretize = new Discretize();
-
-        NB bayes1 = new NB();
-
-        bayes1.buildClassifier(dataset);
-
-        Classifier kfold = learningKFoldCrossValidation(bayes1.dataset, testdata);
+        
+        Classifier kfold = learningKFoldCrossValidation(bayes1.dataset, bayes1.dataset);
 
         Classifier fullt = learningFullTraining(bayes1.dataset, testdata);
         
-        dataset.randomize(new java.util.Random(0));
-        int trainSize = (int) Math.round(dataset.numInstances() * 0.8);
-        int testSize = dataset.numInstances() - trainSize;
-        Instances train = new Instances(dataset, 0, trainSize);
-        Instances test = new Instances(dataset, trainSize, testSize);
+        bayes1.dataset.randomize(new java.util.Random(0));
+        int trainSize = (int) Math.round(bayes1.dataset.numInstances() * 0.8);
+        int testSize = bayes1.dataset.numInstances() - trainSize;
+        Instances train = new Instances(bayes1.dataset, 0, trainSize);
+        Instances test = new Instances(bayes1.dataset, trainSize, testSize);
         
         NB bayes2 = new NB();
 
@@ -295,7 +301,9 @@ public class Main {
             System.out.println("Result: " + bayes1.dataset.attribute(bayes1.index).value(res));
             nama.next();
   */
+        weka.core.SerializationHelper.write("NBft.model", fullt);
         weka.core.SerializationHelper.write("NBkf.model", kfold);
+        weka.core.SerializationHelper.write("NBst.model", splitCls);
 
             //NB bayes2 = new NB();
             //bayes2 = (NB) weka.core.SerializationHelper.read("NB.model");

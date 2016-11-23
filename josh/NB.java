@@ -56,7 +56,7 @@ public class NB extends AbstractClassifier {
         boolean found = false;
         for (i = 0;(i < _dataset.numAttributes())&&(!found);i++) {
             nama = _dataset.attribute(i).name();
-            if (nama.equals("Dalc")) {
+            if (nama.equals("Walc")) {
                 index = i;
                 found = true;
             }
